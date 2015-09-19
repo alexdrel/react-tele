@@ -1,0 +1,48 @@
+{
+  "name": "react-tele",
+  "version": "0.1.0",
+  "description": "React JS telepresence - rendering outside of own DOM subtree",
+  "main": "dist/react-tele.js",
+  "typescript": {
+    "definition": "dist/react-tele.ext.d.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexdrel/react-tele"
+  },
+  "scripts": {
+    "start": "tsc -p src -d",
+    "prebuild": "tsc -p src -d",
+    "build": "webpack -d --config webpack-umd.config.js && webpack -p --config webpack-umd.config.js --output-filename react-tele.umd.min.js",
+    "watch": "tsc -p src -d -watch",
+    "examples": "webpack-dev-server --config webpack-ex.config.js --port 1701 -d",
+    "build-examples": "webpack --config webpack-ex.config.js -d --progress",
+    "wtest": "karma start karma.config.js",
+    "test": "karma start karma.config.js --browsers Firefox --single-run"
+  },
+  "keywords": [
+    "react",
+    "teleport",
+    "DOM"
+  ],
+  "author": "Alex Drel",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "jasmine-core": "^2.3.4",
+    "json-loader": "^0.5.2",
+    "jsx-loader": "^0.13.2",
+    "karma": "0.13.9",
+    "karma-chrome-launcher": "^0.2.0",
+    "karma-firefox-launcher": "^0.1.6",
+    "karma-jasmine": "^0.3.6",
+    "karma-sourcemap-loader": "^0.3.5",
+    "karma-webpack": "1.7.0",
+    "node-libs-browser": "^0.5.2",
+    "ts-loader": "^0.5.5",
+    "typescript": "^1.6.2",
+    "webpack": "^1.11.0",
+    "webpack-dev-server": "^1.10.1",
+    "yaml-loader": "^0.1.0"
+  }
+}
