@@ -8,6 +8,7 @@ export interface PortalProps {
 }
 export declare class Portal extends React.Component<PortalProps, {}> {
     constructor(props?: any);
+    target: Target | Promise<Target>;
     updateTarget(children: any): void;
     closed: boolean;
     close(): void;
@@ -18,6 +19,7 @@ export declare class Portal extends React.Component<PortalProps, {}> {
 }
 export declare class Target extends React.Component<{
     id?: any;
+    ref?: any;
 }, {
     children: any;
 }> {

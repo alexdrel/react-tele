@@ -71,11 +71,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    Portal.prototype.updateTarget = function (children) {
 	        var _this = this;
-	        var target = this.props.id ? Target.Destinations[this.props.id] : this.props.target;
-	        if (typeof target === 'function')
-	            target = target();
-	        if (!target)
+	        if (!this.target)
 	            return;
+	        var target = this.target;
 	        if (typeof target.then === 'function') {
 	            target.then(function (target) { return target.update(children, _this); }).catch(function () { return void 0; });
 	        }
@@ -88,6 +86,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.props.onClose && this.props.onClose();
 	    };
 	    Portal.prototype.componentDidMount = function () {
+	        var target = this.props.id ? Target.Destinations[this.props.id] : this.props.target;
+	        if (typeof target === 'function')
+	            target = target();
+	        this.target = target;
 	        this.updateTarget(this.props.children);
 	    };
 	    Portal.prototype.componentDidUpdate = function () {

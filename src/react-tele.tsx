@@ -15,11 +15,11 @@ export class Portal extends React.Component<PortalProps, {}> {
     super(props);
   }
 
-  updateTarget(children: any) {
-    var target: any = this.props.id ? Target.Destinations[this.props.id] : this.props.target;
-    if(typeof target === 'function') target = target();
-    if(!target) return;
+  target: Target | Promise<Target>;
 
+  updateTarget(children: any) {
+    if(!this.target) return;
+    var target: any = this.target;
     if(typeof target.then === 'function') {
       target.then((target: Target) => target.update(children, this)).catch(():any=>void 0);
     } else {
@@ -35,6 +35,10 @@ export class Portal extends React.Component<PortalProps, {}> {
   }
 
   componentDidMount() {
+    var target: any = this.props.id ? Target.Destinations[this.props.id] : this.props.target;
+    if(typeof target === 'function') target = target();
+    this.target = target;
+
     this.updateTarget(this.props.children);
   }
 
@@ -55,7 +59,7 @@ export class Portal extends React.Component<PortalProps, {}> {
   }
 }
 
-export class Target extends React.Component<{id?: any}, { children: any }> {
+export class Target extends React.Component<{id?: any, ref?: any}, { children: any }> {
   constructor(props?: any) {
     super(props);
     this.state = { children: null};
