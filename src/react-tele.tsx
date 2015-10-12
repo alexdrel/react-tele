@@ -55,7 +55,7 @@ export class Portal extends React.Component<PortalProps, {}> {
   }
 
   render() {
-    return React.createElement("span", null, null);
+    return <noscript/>;
   }
 }
 
@@ -91,7 +91,7 @@ export class Target extends React.Component<{id?: any, ref?: any}, { children: a
   }
 
   render() {
-    return React.createElement("span", null, this.state.children);
+    return this.state.children;
   }
 
   static Destinations: { [key: string] : Target } = {};
