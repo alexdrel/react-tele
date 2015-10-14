@@ -33,6 +33,16 @@ export class Target extends React.Component<{
         [key: string]: Target;
     };
 }
+export class Selector extends Target {
+    constructor(props?: any);
+    multiverse: {
+        [selector: string]: any;
+    };
+    update(children: any, portal: Portal): void;
+    componentWillMount(): void;
+    componentWillUnmount(): void;
+    render(): any;
+}
 var _default: {
     port: typeof Portal;
     target: typeof Target;

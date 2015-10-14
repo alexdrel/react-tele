@@ -2,101 +2,15 @@
 
 import React = require('react');
 import Swiper = require('swiper');
-import { default as Tele, Target } from '../../src/react-tele';
+import { default as Tele, Target, Selector, PortalTarget } from '../../src/react-tele';
 
-// export interface SlideProps {
-//   sn?: SlideNav;
-//   slideIndex?: number;
+export interface SlideProps {
+  index: number;
+  header: PortalTarget;
+  newSlide: PortalTarget;
 
-//   header?: React.ReactChild;
-
-//   // TS typing hack
-//   children?: React.ReactChildren;
-// }
-
-// export interface SlideState {
-//   childSlide?: string;
-//   suspendSwipe?: boolean;
-// }
-
-
-// /**
-// * Slide can be used as a wrapper for unaware component (being unaware means it does not open new slides nor control own header) or
-// * as a base class for slide aware component which may/has to override renderHeader, renderChild and renderSlide (for main content).
-// * It case of inheritance make sure to call super.componentDidUpdate.
-// */
-// export class Slide<P extends SlideProps, S extends SlideState> extends React.Component<P, S> {
-//   constructor(props: P) {
-//     super(props);
-//     this.state = {} as S;
-//   }
-
-//   setOpenState(childSlide: string, state?: any) {
-//     if (childSlide) {
-//       this.newSlide = true;
-//       this.setState({ childSlide } as any as S);
-//     } else {
-//       //this.updateSlider = true;
-//       this.props.sn.slideTo(this.props.slideIndex);
-//     }
-//   }
-
-//   newSlide: boolean;
-//   updateSlider: boolean;
-
-//   componentDidMount() {
-//     this.updateHeader();
-//   }
-
-//   componentDidUpdate() {
-//     this.updateHeader();
-
-//     if(this.newSlide) {
-//       this.newSlide = false;
-//       this.props.sn.newSlide(() => { this.updateSlider=true; this.setState({ childSlide: null} as any as S);  } );
-//     } else if(this.updateSlider) {
-//       this.updateSlider = false;
-//       this.props.sn.update();
-//     }
-//   }
-
-//   renderSlide() : React.ReactFragment {
-//     return this.props.children;
-//   }
-
-//   renderActiveChild() {
-//     if(this.state.childSlide) {
-//       var slide = this.renderChild(this.state.childSlide);
-
-//       return slide && React.cloneElement( slide as any, { sn: this.props.sn, slideIndex: (this.props.slideIndex||0) + 1 });
-//     }
-//   }
-
-//   renderChild(child: string) : React.ReactFragment {
-//     return null;
-//   }
-
-//   renderHeader() {
-//     return this.props.header;
-//   }
-
-//   updateHeader() {
-//     this.props.sn.setHeader(this.props.slideIndex || 0, this.renderHeader());
-//   }
-
-//   render() {
-//     return (
-//       <section className="swiper-wrapper" >
-//         <div className={ "slide-nav swiper-slide" + (this.state.suspendSwipe ?" swiper-no-swiping":'')}>
-//           {this.renderSlide()}
-//         </div>
-
-//         { this.state.childSlide && this.renderActiveChild() }
-//       </section>
-//     );
-//   }
-// }
-
+  next(): SlideProps;
+}
 
 export interface SlideHeaderProps {
   back?: Action;
@@ -122,16 +36,18 @@ export class SlideHeader extends React.Component<SlideHeaderProps, SlideHeadeSta
     this.state = {};
   }
 
+  selector: Selector;
+
   render() {
     return (
-          <header className="page-header">
-            { this.state.slideIndex>0 ?
-                <button className="back-button" onClick={this.props.back}></button>
-              :
-                this.props.close && <button className="close-button" onClick={this.props.close}></button>
-            }
-            { this.state.header }
-          </header>
+      <header className="page-header">
+        { this.state.slideIndex>0 ?
+            <button className="back-button" onClick={this.props.back}></button>
+          :
+            this.props.close && <button className="close-button" onClick={this.props.close}></button>
+        }
+        <Selector selector={this.state.slideIndex} ref={(e:Selector) => this.selector = e }/>
+      </header>
     );
   }
 }
@@ -155,10 +71,16 @@ export class SlideNav extends React.Component<SlideNavProps, SlideNavState> {
   constructor(props: SlideNavProps){
     super(props);
 
-    this.state = { slides: [
-      React.cloneElement(React.Children.only(this.props.children) as any,
-          { sn: this, port: this.newPort })
-    ]};
+    var slide: SlideProps = {
+      index:0,
+      newSlide: this.newPort,
+      header: this.headerPort,
+      next: function(): SlideProps {  return { index: this.index+1, newSlide: this.newSlide, header: this.header, next: this.next } }
+    };
+
+    this.state = {
+      slides: [ React.cloneElement(React.Children.only(this.props.children) as any, { slide }) ]
+    };
   }
 
   swiper: Swiper;
@@ -171,12 +93,14 @@ export class SlideNav extends React.Component<SlideNavProps, SlideNavState> {
   }
 
   componentDidMount() {
-    require.ensure(['swiper', "swiper_css"], (require) => {
+    require.ensure(['swiper', 'swiper_css'], (require) => {
       if(this.disposed)
         return;
 
-      var Swiper = require('swiper');
-      this.swiper = new Swiper((this.refs['swiperContainer'] as any).getDOMNode(), {
+      var ASwiper: typeof Swiper = require('swiper');
+      require('swiper_css');
+
+      this.swiper = new ASwiper((this.refs['swiperContainer'] as any).getDOMNode(), {
         slideClass: "slide-nav",
         resistanceRatio: 0,
         spaceBetween: 20,
@@ -195,20 +119,18 @@ export class SlideNav extends React.Component<SlideNavProps, SlideNavState> {
           this.state.slides.splice(this.swiper.activeIndex + 1);
           this.setState({});
         }
-
         setTimeout(() => { this.inTransition = false; }, 10);
-        //this.refs.header.setState({ backButton: this.swiper.activeIndex >0 , header: this.headers[this.swiper.activeIndex] });
       });
 
       this.swiper.on("slideChangeStart", () => {
         if(!this.disposed) {
-          // this.header.setState({ slideIndex: this.swiper.activeIndex , header: this.headers[this.swiper.activeIndex] });
+          this.header.setState({ slideIndex: this.swiper.activeIndex });
         }
         this.inTransition = true;
       });
 
     },"ui");
-    //this.header.setState({ slideIndex: 0, header: this.headers[0] });
+    this.header.setState({ slideIndex: 0 });
   }
 
   componentWillUnmount() {
@@ -222,6 +144,10 @@ export class SlideNav extends React.Component<SlideNavProps, SlideNavState> {
     });
   }
 
+  headerPort = () => {
+    return this.header.selector;
+  }
+
   componentDidUpdate() {
     if(this.swiper) {
       this.swiper.update();
@@ -229,18 +155,11 @@ export class SlideNav extends React.Component<SlideNavProps, SlideNavState> {
     }
   }
 
-  headers: React.ReactChild[] = [];
-
-  setHeader(slideIndex: number, header: React.ReactChild) {
-    this.headers[slideIndex] = header;
-    if(this.swiper && this.swiper.activeIndex == slideIndex) {
-      this.header.setState({ slideIndex , header: this.headers[this.swiper.activeIndex] });
+  back = () => {
+    if(this.swiper) {
+      this.swiper.slidePrev();
     }
   }
-
-  update = () => this.swiper && this.swiper.update();
-  back = () => this.swiper && this.swiper.slidePrev();
-
 
   onClickCapture = (e: Event) => {
     if(this.inTransition) {
@@ -262,10 +181,6 @@ export class SlideNav extends React.Component<SlideNavProps, SlideNavState> {
                 )
               }
             </div>
-            <div className="swiper-pagination"></div>
-
-            <div className="swiper-button-prev"></div>
-            <div className="swiper-button-next"></div>
         </div>
       </div>
     );

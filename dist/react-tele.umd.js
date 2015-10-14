@@ -86,7 +86,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.props.onClose && this.props.onClose();
 	    };
 	    Portal.prototype.componentDidMount = function () {
-	        var target = this.props.id ? Target.Destinations[this.props.id] : this.props.target;
+	        var target = !this.props.target && this.props.id ? Target.Destinations[this.props.id] : this.props.target;
 	        if (typeof target === 'function')
 	            target = target();
 	        this.target = target;
@@ -135,13 +135,53 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.props.id && (Target.Destinations[this.props.id] = null);
 	    };
 	    Target.prototype.render = function () {
-	        return React.createElement("span", null, this.state.children);
+	        if (React.Children.count(this.state.children) == 1 && typeof (this.state.children) == "object") {
+	            return React.Children.only(this.state.children);
+	        }
+	        else {
+	            return React.createElement("span", null, this.state.children);
+	        }
 	    };
 	    Target.Destinations = {};
 	    return Target;
 	})(React.Component);
 	exports.Target = Target;
-	var _default = { port: Portal, target: Target };
+	var Selector = (function (_super) {
+	    __extends(Selector, _super);
+	    function Selector(props) {
+	        _super.call(this, props);
+	        this.multiverse = {};
+	    }
+	    Selector.prototype.update = function (children, portal) {
+	        var portalId = portal.props.id;
+	        if (children === undefined) {
+	            delete this.multiverse[portalId];
+	        }
+	        else {
+	            this.multiverse[portalId] = children;
+	        }
+	        if (this.props.selector == portalId) {
+	            this.setState({ children: children });
+	        }
+	    };
+	    Selector.prototype.componentWillMount = function () {
+	    };
+	    Selector.prototype.componentWillUnmount = function () {
+	        _super.prototype.componentWillUnmount.call(this);
+	    };
+	    Selector.prototype.render = function () {
+	        var children = this.multiverse[this.props.selector];
+	        if (React.Children.count(children) == 1 && typeof (children) == "object") {
+	            return React.Children.only(children);
+	        }
+	        else {
+	            return React.createElement("span", null, children);
+	        }
+	    };
+	    return Selector;
+	})(Target);
+	exports.Selector = Selector;
+	var _default = { port: Portal, target: Target, selector: Selector };
 	exports.__esModule = true;
 	exports["default"] = _default;
 

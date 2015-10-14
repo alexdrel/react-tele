@@ -1,11 +1,11 @@
 import React = require('react');
-import { SlideNav } from './slide-navigation';
+import { SlideNav, SlideProps } from './slide-navigation';
 import { default as Tele, Target } from '../../src/react-tele';
 
 // Prevents loading of CSS into separate chunk
 var swiperCSS = require("swiper_css");
 
-class TestSlide extends React.Component<{val: string, port?: any}, { nval?: string }> {
+class TestSlide extends React.Component<{val: string, slide?: SlideProps}, { nval?: string }> {
   constructor(props: {val: string}) {
     super(props);
     this.state = {};
@@ -14,6 +14,11 @@ class TestSlide extends React.Component<{val: string, port?: any}, { nval?: stri
   render(): any {
     return (
       <article>
+
+        <Tele.port target={this.props.slide.header} id={this.props.slide.index}>
+         <h3>--{this.props.val}--</h3>
+        </Tele.port>
+
         <h1>**{this.props.val}**</h1>
         <div>
           {
@@ -27,8 +32,8 @@ class TestSlide extends React.Component<{val: string, port?: any}, { nval?: stri
         </div>
 
         {this.state.nval &&
-          <Tele.port target={this.props.port} onClose={()=>this.setState({nval: null})} >
-            <TestSlide val={this.props.val + this.state.nval} port={this.props.port}/>
+          <Tele.port target={this.props.slide.newSlide} onClose={()=>this.setState({nval: null})} >
+            <TestSlide slide={this.props.slide.next()} val={this.props.val + this.state.nval} />
           </Tele.port>
         }
       </article>

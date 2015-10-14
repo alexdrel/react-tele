@@ -25,6 +25,7 @@ interface SwiperOptions {
     preventLinks?: boolean;
     initialSlide?: number;
     useCSS3Transforms?: boolean;
+    spaceBetween?: number;
 
     // Free Mode and Scroll Container
     freeMode?: boolean;
@@ -33,6 +34,7 @@ interface SwiperOptions {
     momentumRatio?: number;
     momentumBounce?: boolean;
     momentumBounceRatio?: number;
+    resistanceRatio?: number;
 
     // Slides offset
     centeredSlides?: boolean;
@@ -49,7 +51,8 @@ interface SwiperOptions {
     grabCursor?: boolean;
     shortSwipes?: boolean;
     moveStartThreshold?: number;
-
+    threshold?: number;
+    
     // Navigation
     keyboardControl?: boolean;
     mousewheelControl?: boolean;
@@ -87,6 +90,8 @@ interface SwiperOptions {
     onMomentumBounce?: (swiper: Swiper) => void;
     onResistanceBefore?: (swiper: Swiper, distance: any) => void;
     onResistanceAfter?: (swiper: Swiper, distance: any) => void;
+    preventLinksPropagation?: boolean;
+    touchMoveStopPropagation?: boolean;
 
     // Slides Loader
     loader?: {
