@@ -1,5 +1,5 @@
 import React = require('react');
-import { SlideNav, SlideProps } from './slide-navigation';
+import { Header, Slide, SlideNav, SlideProps } from './slide-navigation';
 import { default as Tele, Target } from '../../src/react-tele';
 
 // Prevents loading of CSS into separate chunk
@@ -15,9 +15,9 @@ class TestSlide extends React.Component<{val: string, slide?: SlideProps}, { nva
     return (
       <article>
 
-        <Tele.port target={this.props.slide.header} id={this.props.slide.index}>
+        <Header slide={this.props.slide}>
          <h3>--{this.props.val}--</h3>
-        </Tele.port>
+        </Header>
 
         <h1>**{this.props.val}**</h1>
         <div>
@@ -32,9 +32,9 @@ class TestSlide extends React.Component<{val: string, slide?: SlideProps}, { nva
         </div>
 
         {this.state.nval &&
-          <Tele.port target={this.props.slide.newSlide} onClose={()=>this.setState({nval: null})} >
-            <TestSlide slide={this.props.slide.next()} val={this.props.val + this.state.nval} />
-          </Tele.port>
+          <Slide slide={this.props.slide} onClose={()=>this.setState({nval: null})} >
+            <TestSlide val={this.props.val + this.state.nval} />
+          </Slide>
         }
       </article>
     );

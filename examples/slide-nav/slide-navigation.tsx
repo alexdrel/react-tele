@@ -4,31 +4,26 @@ import React = require('react');
 import Swiper = require('swiper');
 import { default as Tele, Target, Selector, PortalTarget } from '../../src/react-tele';
 
+type Action = ()=> void;
+
 export interface SlideProps {
   index: number;
-  header: PortalTarget;
-  newSlide: PortalTarget;
-
-  next(): SlideProps;
+  headerPort: PortalTarget;
+  newPort: PortalTarget;
 }
 
-export interface SlideHeaderProps {
-  back?: Action;
-  close?: Action;
+interface SlideHeaderProps {
+  onBack?: Action;
+  onClose?: Action;
 
   // TS typing hack
-  ref?: string | ((component: SlideHeader) => any);
-}
-
-export interface SlideHeadeState {
-  header?: React.ReactChild;
-  slideIndex?: number;
+  ref?: (component: SlideHeader) => any;
 }
 
 /**
 * Render Slide Header
 */
-export class SlideHeader extends React.Component<SlideHeaderProps, SlideHeadeState > {
+class SlideHeader extends React.Component<SlideHeaderProps, { slideIndex?: number } > {
 
   constructor(props: SlideHeaderProps){
     super(props);
@@ -42,9 +37,9 @@ export class SlideHeader extends React.Component<SlideHeaderProps, SlideHeadeSta
     return (
       <header className="page-header">
         { this.state.slideIndex>0 ?
-            <button className="back-button" onClick={this.props.back}></button>
+            <button className="back-button" onClick={this.props.onBack}></button>
           :
-            this.props.close && <button className="close-button" onClick={this.props.close}></button>
+            this.props.onClose && <button className="close-button" onClick={this.props.onClose}></button>
         }
         <Selector selector={this.state.slideIndex} ref={(e:Selector) => this.selector = e }/>
       </header>
@@ -52,34 +47,31 @@ export class SlideHeader extends React.Component<SlideHeaderProps, SlideHeadeSta
   }
 }
 
-type Action = ()=> void;
-
 interface SlideNavProps {
-   close?: Action;
+   onClose?: Action;
    children?: any;
 }
 
-interface SlideNavState {
-   slides?: React.ReactNode[];
+function cloneSlideChild(that: any, slide: SlideProps) {
+  return React.cloneElement(React.Children.only(that.props.children) as any, { slide });
 }
 
 /**
 * Creates Slider Navigation stack, requires content - the single Slide to start the navigation stack.
 */
-export class SlideNav extends React.Component<SlideNavProps, SlideNavState> {
+export class SlideNav extends React.Component<SlideNavProps, { slides?: React.ReactNode[] }> {
 
   constructor(props: SlideNavProps){
     super(props);
 
     var slide: SlideProps = {
       index:0,
-      newSlide: this.newPort,
-      header: this.headerPort,
-      next: function(): SlideProps {  return { index: this.index+1, newSlide: this.newSlide, header: this.header, next: this.next } }
+      newPort: this.newPort,
+      headerPort: this.headerPort,
     };
 
     this.state = {
-      slides: [ React.cloneElement(React.Children.only(this.props.children) as any, { slide }) ]
+      slides: [ cloneSlideChild(this, slide) ]
     };
   }
 
@@ -137,6 +129,13 @@ export class SlideNav extends React.Component<SlideNavProps, SlideNavState> {
     this.disposed = true;
   }
 
+  componentDidUpdate() {
+    if(this.swiper) {
+      this.swiper.update();
+      this.swiper.slideNext();
+    }
+  }
+
   newPort = () => {
     return new Promise((resolve) => {
       this.state.slides.push(<Tele.target ref={(r: Target) => resolve(r) }/>);
@@ -146,13 +145,6 @@ export class SlideNav extends React.Component<SlideNavProps, SlideNavState> {
 
   headerPort = () => {
     return this.header.selector;
-  }
-
-  componentDidUpdate() {
-    if(this.swiper) {
-      this.swiper.update();
-      this.swiper.slideNext();
-    }
   }
 
   back = () => {
@@ -171,7 +163,7 @@ export class SlideNav extends React.Component<SlideNavProps, SlideNavState> {
   render() {
     return (
       <div className="main">
-        <SlideHeader ref={ (header) => this.header = header } back={this.back} close={this.props.close}/>
+        <SlideHeader ref={ (header) => this.header = header } onBack={this.back} onClose={this.props.onClose}/>
 
         <div className="swiper-container" ref="swiperContainer" onClickCapture={this.onClickCapture}>
             <div className="swiper-wrapper">
@@ -184,5 +176,21 @@ export class SlideNav extends React.Component<SlideNavProps, SlideNavState> {
         </div>
       </div>
     );
+  }
+}
+
+export class Header extends React.Component<{ slide: SlideProps, children?: any}, {}> {
+  render() {
+    var { index = 0 , headerPort } = this.props.slide;
+    return React.createElement(Tele.port, { target: headerPort, id: index }, this.props.children);
+  }
+}
+
+export class Slide extends React.Component<{ slide: SlideProps, onClose: Action, children?: any}, {}> {
+  render() {
+    var { index = 0 , newPort, headerPort } = this.props.slide;
+    index = (+index)+1;
+    return React.createElement(Tele.port, { target: newPort, onClose: this.props.onClose },
+             cloneSlideChild(this, { index, newPort, headerPort } ));
   }
 }
