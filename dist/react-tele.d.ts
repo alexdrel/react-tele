@@ -26,6 +26,7 @@ export declare class Target extends React.Component<{
     children: any;
 }> {
     constructor(props?: any);
+    mounted: boolean;
     portal: Portal;
     update(children: any, portal: Portal): void;
     componentWillMount(): void;

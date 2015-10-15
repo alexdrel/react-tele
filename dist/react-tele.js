@@ -23,8 +23,10 @@ var Portal = (function (_super) {
         }
     };
     Portal.prototype.close = function () {
+        if (!this.closed) {
+            this.props.onClose && this.props.onClose();
+        }
         this.closed = true;
-        this.props.onClose && this.props.onClose();
     };
     Portal.prototype.componentDidMount = function () {
         var target = !this.props.target && this.props.id ? Target.Destinations[this.props.id] : this.props.target;
@@ -40,6 +42,7 @@ var Portal = (function (_super) {
     };
     Portal.prototype.componentWillUnmount = function () {
         if (!this.closed) {
+            this.closed = true;
             this.updateTarget(undefined);
         }
     };
@@ -66,12 +69,16 @@ var Target = (function (_super) {
             this.portal && this.portal.close();
             this.portal = portal;
         }
-        this.setState({ children: children });
+        if (this.mounted) {
+            this.setState({ children: children });
+        }
     };
     Target.prototype.componentWillMount = function () {
+        this.mounted = true;
         this.props.id && (Target.Destinations[this.props.id] = this);
     };
     Target.prototype.componentWillUnmount = function () {
+        this.mounted = false;
         this.portal && this.portal.close();
         this.props.id && (Target.Destinations[this.props.id] = null);
     };

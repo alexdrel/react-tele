@@ -24,10 +24,8 @@ interface SlideHeaderProps {
 * Render Slide Header
 */
 class SlideHeader extends React.Component<SlideHeaderProps, { slideIndex?: number } > {
-
   constructor(props: SlideHeaderProps){
     super(props);
-
     this.state = {};
   }
 

@@ -31,8 +31,10 @@ export class Portal extends React.Component<PortalProps, {}> {
   closed: boolean;
 
   close() {
+    if(!this.closed) {
+      this.props.onClose && this.props.onClose();
+    }
     this.closed = true;
-    this.props.onClose && this.props.onClose();
   }
 
   componentDidMount() {
@@ -51,6 +53,7 @@ export class Portal extends React.Component<PortalProps, {}> {
 
   componentWillUnmount() {
     if(!this.closed) {
+      this.closed = true;
       this.updateTarget(undefined);
     }
   }
@@ -66,6 +69,7 @@ export class Target extends React.Component<{id?: any, selector?: number, ref?: 
     this.state = { children: null};
   }
 
+  mounted: boolean;
   portal: Portal;
 
   update(children: any, portal: Portal) {
@@ -78,15 +82,18 @@ export class Target extends React.Component<{id?: any, selector?: number, ref?: 
       this.portal && this.portal.close();
       this.portal = portal;
     }
-
-    this.setState({ children });
+    if(this.mounted) {
+      this.setState({ children });
+    }
   }
 
   componentWillMount() {
+    this.mounted = true;
     this.props.id && (Target.Destinations[this.props.id] = this);
   }
 
   componentWillUnmount() {
+    this.mounted = false;
     this.portal && this.portal.close();
     this.props.id && (Target.Destinations[this.props.id] = null);
   }
