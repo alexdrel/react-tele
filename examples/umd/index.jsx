@@ -1,14 +1,14 @@
-var Tele = window['react-tele'].default;
+var { Portal, Site } = window['react-tele'];
 
 React.render(
   <section>
     <h1>
-      <Tele.target id="header"/>
+      <Site id="header"/>
     </h1>
     <div>
-      <Tele.port id="header">
+      <Portal site="header">
         Mr. Spock
-      </Tele.port>
+      </Portal>
       USS Enterprise (NCC-1701) science officer.
     </div>
   </section>,

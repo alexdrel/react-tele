@@ -1,6 +1,7 @@
 var React = require('react');
 var Officer = require('./officer');
-var Teletarget = require('react-tele').Target;
+var { Portal, Site } = require('react-tele');
+
 
 
 class Trek extends React.Component {
@@ -38,7 +39,7 @@ class Trek extends React.Component {
       { this.state.teleport &&
         <section className="Planet">
           Last beamed:
-          <Teletarget ref="beam"/>
+          <Site ref="beam"/>
           <br/>
           <button onClick={()=>this.setState({teleport: false })}>Close</button>
         </section>

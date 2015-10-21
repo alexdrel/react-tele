@@ -2,7 +2,7 @@
 /// <reference path="../src/reference.d.ts" />
 
 import React = require('react/addons');
-import { default as Tele, Target } from '../src/react-tele';
+import { Portal, Site } from '../src/react-tele';
 var ReactTestUtils = React.addons.TestUtils;
 
 describe("react-tele", () => {
@@ -13,12 +13,12 @@ describe("react-tele", () => {
     var tree = React.render(
       <section>
         <h1>
-          <Tele.target id="header"/>
+          <Site id="header"/>
         </h1>
         <div>
-          <Tele.port id="header">
+          <Portal site="header">
             Mr. Spock
-          </Tele.port>
+          </Portal>
           USS Enterprise (NCC-1701) science officer.
         </div>
       </section>,
@@ -39,14 +39,14 @@ describe("react-tele", () => {
     var container = document.createElement('div');
     var tree = React.render(
       <section>
-        <h1><Tele.target id="h1"/></h1>
-        <h2><Tele.target id="h2"/></h2>
-        <h3><Tele.target id="h3"/></h3>
-        <h4><Tele.target id="h4"/></h4>
+        <h1><Site id="h1"/></h1>
+        <h2><Site id="h2"/></h2>
+        <h3><Site id="h3"/></h3>
+        <h4><Site id="h4"/></h4>
         <div>
-          <Tele.port id="h1">Kirk</Tele.port>
-          <Tele.port id="h2">Spock</Tele.port>
-          <Tele.port id="h3">Sulu</Tele.port>
+          <Portal site="h1">Kirk</Portal>
+          <Portal site="h2">Spock</Portal>
+          <Portal site="h3">Sulu</Portal>
         </div>
       </section>,
       container
@@ -77,7 +77,7 @@ describe("react-tele", () => {
     var container = document.createElement('div');
     var tree = React.render(
       <h1>
-        <Tele.target id="header"/>
+        <Site id="header"/>
       </h1>,
       container
     );
@@ -88,9 +88,9 @@ describe("react-tele", () => {
 
     var container1 = document.createElement('div');
     var tree1 = React.render(
-      <Tele.port id="header">
+      <Portal site="header">
         Kirk
-      </Tele.port>,
+      </Portal>,
       container1
     );
 
@@ -103,19 +103,19 @@ describe("react-tele", () => {
     var container = document.createElement('div');
     var tree = React.render(
       <h1>
-        <Tele.target/>
+        <Site/>
       </h1>,
       container
     );
 
-    var target: Target = ReactTestUtils.findRenderedComponentWithType(tree, Target) as any;
-    expect(target).not.toBeNull();
+    var site: Site = ReactTestUtils.findRenderedComponentWithType(tree, Site) as any;
+    expect(site).not.toBeNull();
 
     var container1 = document.createElement('div');
     var tree1 = React.render(
-      <Tele.port target={target}>
+      <Portal site={site}>
         Kirk
-      </Tele.port>,
+      </Portal>,
       container1
     );
 
@@ -124,9 +124,9 @@ describe("react-tele", () => {
     expect(React.findDOMNode(h1).textContent).toBe('Kirk');
 
     React.render(
-      <Tele.port target={() => target}>
+      <Portal site={() => site}>
         James Kirk
-      </Tele.port>,
+      </Portal>,
       container1
     );
     h1 = ReactTestUtils.findRenderedDOMComponentWithTag(tree, 'h1');
@@ -135,63 +135,63 @@ describe("react-tele", () => {
   });
 
   it("teleports by promise", (done) => {
-    var target: Target = null;
-    var promise = new Promise<Target>(resolve => {
+    var site: Site = null;
+    var promise = new Promise<Site>(resolve => {
       setTimeout( () => {
         var container = document.createElement('div');
         var tree = React.render(
           <h1>
-            <Tele.target/>
+            <Site/>
           </h1>,
           container
         );
-        target = ReactTestUtils.findRenderedComponentWithType(tree, Target) as any;
-        resolve(target);
+        site = ReactTestUtils.findRenderedComponentWithType(tree, Site) as any;
+        resolve(site);
       }, 50);
     });
 
     var container1 = document.createElement('div');
     var tree1 = React.render(
-      <Tele.port target={promise}>
+      <Portal site={promise}>
         Kirk
-      </Tele.port>,
+      </Portal>,
       container1
     );
 
-    expect(target).toBeNull();
+    expect(site).toBeNull();
     setTimeout( () => {
-      expect(target).not.toBeNull();
-      expect(React.findDOMNode(target).textContent).toBe('Kirk');
+      expect(Site).not.toBeNull();
+      expect(React.findDOMNode(site).textContent).toBe('Kirk');
       done();
     }, 100);
   });
 
   it("teleports by promise function", (done) => {
-    var target: Target = null;
+    var site: Site = null;
 
-    var promise = () => new Promise<Target>(resolve => {
+    var promise = () => new Promise<Site>(resolve => {
       var container = document.createElement('div');
       var tree = React.render(
         <h1>
-          <Tele.target/>
+          <Site/>
         </h1>,
         container
       );
-      target = ReactTestUtils.findRenderedComponentWithType(tree, Target) as any;
-      resolve(target);
+      site = ReactTestUtils.findRenderedComponentWithType(tree, Site) as any;
+      resolve(site);
     });
 
     var container1 = document.createElement('div');
     var tree1 = React.render(
-      <Tele.port target={promise}>
+      <Portal site={promise}>
         James Kirk
-      </Tele.port>,
+      </Portal>,
       container1
     );
 
     setTimeout( () => {
-      expect(target).not.toBeNull();
-      expect(React.findDOMNode(target).textContent).toBe('James Kirk');
+      expect(site).not.toBeNull();
+      expect(React.findDOMNode(site).textContent).toBe('James Kirk');
       done();
     }, 50);
   });

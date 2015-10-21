@@ -1,5 +1,5 @@
 var React = require('react');
-var Teleport = require('react-tele').Portal;
+var { Portal } = require('react-tele');
 var Timer = require('./timer');
 
 
@@ -25,13 +25,13 @@ class Officer extends React.Component {
         <div>On Board
         </div>
        :
-        <Teleport target={this.props.beam} onClose={() => this.setState({onBoard:true})}>
+        <Portal site={this.props.beam} onClose={() => this.setState({onBoard:true})}>
           <div>
             {this.props.captain || this.state.acting ? "Captain " : "" }
             {this.props.name}
             <span> <Timer/> seconds ago  </span>
           </div>
-        </Teleport>
+        </Portal>
       }
     </div>
     );

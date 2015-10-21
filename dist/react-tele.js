@@ -12,23 +12,32 @@ var Portal = (function (_super) {
     }
     Portal.prototype.updateTarget = function (children) {
         var _this = this;
-        var target = this.props.id ? Target.Destinations[this.props.id] : this.props.target;
-        if (typeof target === 'function')
-            target = target();
-        if (!target)
+        if (!this.site)
             return;
-        if (typeof target.then === 'function') {
-            target.then(function (target) { return target.update(children, _this); }).catch(function () { return void 0; });
+        var site = this.site;
+        if (typeof site.then === 'function') {
+            site.then(function (site) { return site.update(children, _this); }).catch(function () { return void 0; });
         }
         else {
-            target.update(children, this);
+            site.update(children, this);
         }
     };
     Portal.prototype.close = function () {
+        if (!this.closed) {
+            this.props.onClose && this.props.onClose();
+        }
         this.closed = true;
-        this.props.onClose && this.props.onClose();
     };
     Portal.prototype.componentDidMount = function () {
+        if (typeof this.props.site === 'string') {
+            this.site = Site.Destinations[this.props.site];
+        }
+        else if (typeof this.props.site === 'function') {
+            this.site = this.props.site();
+        }
+        else {
+            this.site = this.props.site;
+        }
         this.updateTarget(this.props.children);
     };
     Portal.prototype.componentDidUpdate = function () {
@@ -38,6 +47,7 @@ var Portal = (function (_super) {
     };
     Portal.prototype.componentWillUnmount = function () {
         if (!this.closed) {
+            this.closed = true;
             this.updateTarget(undefined);
         }
     };
@@ -47,39 +57,54 @@ var Portal = (function (_super) {
     return Portal;
 })(React.Component);
 exports.Portal = Portal;
-var Target = (function (_super) {
-    __extends(Target, _super);
-    function Target(props) {
+var Site = (function (_super) {
+    __extends(Site, _super);
+    function Site(props) {
         _super.call(this, props);
+        this.portals = {};
+        this.multiverse = {};
         this.state = { children: null };
     }
-    Target.prototype.update = function (children, portal) {
+    Site.prototype.update = function (children, portal) {
+        var portalId = portal.props.id || 0;
         if (children === undefined) {
-            if (this.portal == portal) {
-                this.portal = null;
-                children = null;
+            delete this.multiverse[portalId];
+            delete this.portals[portalId];
+        }
+        else {
+            this.multiverse[portalId] = children;
+            if (this.portals[portalId] && this.portals[portalId] != portal) {
+                this.portals[portalId].close();
+            }
+            this.portals[portalId] = portal;
+        }
+        if (this.mounted && (this.props.portal || 0) == portalId) {
+            this.setState({});
+        }
+    };
+    Site.prototype.componentWillMount = function () {
+        this.mounted = true;
+        this.props.id && (Site.Destinations[this.props.id] = this);
+    };
+    Site.prototype.componentWillUnmount = function () {
+        this.mounted = false;
+        for (var id in this.portals) {
+            if (this.portals.hasOwnProperty(id)) {
+                this.portals[id].close();
             }
         }
-        else if (portal != this.portal) {
-            this.portal && this.portal.close();
-            this.portal = portal;
+        this.props.id && (Site.Destinations[this.props.id] = null);
+    };
+    Site.prototype.render = function () {
+        var children = this.multiverse[this.props.portal || 0];
+        if (React.Children.count(children) == 1 && typeof (children) == "object") {
+            return React.Children.only(children);
         }
-        this.setState({ children: children });
+        else {
+            return React.createElement("span", null, children);
+        }
     };
-    Target.prototype.componentWillMount = function () {
-        this.props.id && (Target.Destinations[this.props.id] = this);
-    };
-    Target.prototype.componentWillUnmount = function () {
-        this.portal && this.portal.close();
-        this.props.id && (Target.Destinations[this.props.id] = null);
-    };
-    Target.prototype.render = function () {
-        return React.createElement("span", null, this.state.children);
-    };
-    Target.Destinations = {};
-    return Target;
+    Site.Destinations = {};
+    return Site;
 })(React.Component);
-exports.Target = Target;
-var _default = { port: Portal, target: Target };
-exports.__esModule = true;
-exports["default"] = _default;
+exports.Site = Site;
