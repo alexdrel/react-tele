@@ -2,14 +2,15 @@
 
 import React = require('react');
 import Swiper = require('swiper');
-import { Portal, Site, PortalSite } from '../../src/react-tele';
+import { Portal, Site, PortalSite } from 'react-tele';
 
-type Action = ()=> void;
+type Action = () => void;
 
 export interface SlideProps {
   index: number;
   headerSite: PortalSite;
   newSite: PortalSite;
+  back: Action;
 }
 
 interface SlideHeaderProps {
@@ -66,6 +67,7 @@ export class SlideNav extends React.Component<SlideNavProps, { slides?: React.Re
       index:0,
       newSite: this.newSite,
       headerSite: this.headerSite,
+      back: this.back,
     };
 
     this.state = {
@@ -186,9 +188,9 @@ export class Header extends React.Component<{ slide: SlideProps, children?: any}
 
 export class Slide extends React.Component<{ slide: SlideProps, onClose: Action, children?: any}, {}> {
   render() {
-    var { index = 0 , newSite, headerSite } = this.props.slide;
+    var { index = 0 , newSite, headerSite, back } = this.props.slide;
     index = (+index)+1;
     return React.createElement(Portal, { site: newSite, onClose: this.props.onClose },
-             cloneSlideChild(this, { index, newSite, headerSite } ));
+             cloneSlideChild(this, { index, newSite, headerSite, back } ));
   }
 }

@@ -28,6 +28,7 @@ class TestSlide extends React.Component<{val: string, slide?: SlideProps}, { nva
         </div>
         <div>
           <button onClick={()=> this.setState({nval: null})}> Clear </button>
+          <button onClick={this.props.slide.back}> Back </button>
         </div>
 
         {this.state.nval &&
