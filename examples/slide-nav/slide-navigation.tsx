@@ -2,6 +2,7 @@
 
 import React = require('react');
 import Swiper = require('swiper');
+import classnames = require('classnames');
 import { Portal, Site, PortalSite } from 'react-tele';
 
 type Action = () => void;
@@ -11,6 +12,7 @@ export interface SlideProps {
   headerSite: PortalSite;
   newSite: PortalSite;
   back: Action;
+  lockSwipe: (isLocked: boolean) => void;
 }
 
 interface SlideHeaderProps {
@@ -22,10 +24,10 @@ interface SlideHeaderProps {
 }
 
 /**
-* Render Slide Header
-*/
+ * Render Slide Header
+ */
 class SlideHeader extends React.Component<SlideHeaderProps, { slideIndex?: number } > {
-  constructor(props: SlideHeaderProps){
+  constructor(props: SlideHeaderProps) {
     super(props);
     this.state = {};
   }
@@ -56,18 +58,18 @@ function cloneSlideChild(that: any, slide: SlideProps) {
 }
 
 /**
-* Creates Slider Navigation stack, requires content - the single Slide to start the navigation stack.
-*/
-export class SlideNav extends React.Component<SlideNavProps, { slides?: React.ReactNode[] }> {
-
-  constructor(props: SlideNavProps){
+ * Creates Slider Navigation stack, requires content - the single Slide to start the navigation stack.
+ */
+export class SlideNav extends React.Component<SlideNavProps, {slides?: React.ReactNode[], isSwipeLocked?: boolean}> {
+  constructor(props: SlideNavProps) {
     super(props);
 
     var slide: SlideProps = {
-      index:0,
+      index: 0,
       newSite: this.newSite,
       headerSite: this.headerSite,
       back: this.back,
+      lockSwipe: this.lockSwipe
     };
 
     this.state = {
@@ -86,13 +88,14 @@ export class SlideNav extends React.Component<SlideNavProps, { slides?: React.Re
 
   componentDidMount() {
     require.ensure(['swiper', 'swiper_css'], (require) => {
-      if(this.disposed)
+      if(this.disposed) {
         return;
+      }
 
       var ASwiper: typeof Swiper = require('swiper');
       require('swiper_css');
 
-      this.swiper = new ASwiper((this.refs['swiperContainer'] as any).getDOMNode(), {
+      this.swiper = new ASwiper(this.refs['swiperContainer'] as any, {
         slideClass: "slide-nav",
         resistanceRatio: 0,
         spaceBetween: 20,
@@ -104,8 +107,9 @@ export class SlideNav extends React.Component<SlideNavProps, { slides?: React.Re
       });
 
       this.swiper.on("slideChangeEnd", () => {
-        if(this.disposed)
+        if(this.disposed) {
           return;
+        }
 
         if(this.swiper.previousIndex > this.swiper.activeIndex) {
           this.state.slides.splice(this.swiper.activeIndex + 1);
@@ -121,7 +125,7 @@ export class SlideNav extends React.Component<SlideNavProps, { slides?: React.Re
         this.inTransition = true;
       });
 
-    },"ui");
+    }, "ui");
     this.header.setState({ slideIndex: 0 });
   }
 
@@ -153,7 +157,11 @@ export class SlideNav extends React.Component<SlideNavProps, { slides?: React.Re
     }
   }
 
-  onClickCapture = (e: Event) => {
+  lockSwipe = (isSwipeLocked: boolean) => {
+    this.setState({isSwipeLocked});
+  }
+
+  onClickCapture = (e: React.MouseEvent) => {
     if(this.inTransition) {
       e.preventDefault();
       e.stopPropagation();
@@ -163,15 +171,16 @@ export class SlideNav extends React.Component<SlideNavProps, { slides?: React.Re
   render() {
     return (
       <div className="main">
-        <SlideHeader ref={ (header) => this.header = header } onBack={this.back} onClose={this.props.onClose}/>
+        <SlideHeader ref={header => this.header = header}
+          onBack={this.back}
+          onClose={this.props.onClose}/>
 
-        <div className="swiper-container" ref="swiperContainer" onClickCapture={this.onClickCapture}>
+        <div className={classnames("swiper-container", {"swiper-no-swiping": this.state.isSwipeLocked})}
+          ref="swiperContainer" onClickCapture={this.onClickCapture}>
             <div className="swiper-wrapper">
-              {
-                this.state.slides.map((s,i)=>
-                  <div className="slide-nav swiper-slide" key={i}>{s}</div>
-                )
-              }
+              {this.state.slides.map((s, i) =>
+                <div className="slide-nav swiper-slide" key={i}>{s}</div>
+              )}
             </div>
         </div>
       </div>
@@ -188,9 +197,9 @@ export class Header extends React.Component<{ slide: SlideProps, children?: any}
 
 export class Slide extends React.Component<{ slide: SlideProps, onClose: Action, children?: any}, {}> {
   render() {
-    var { index = 0 , newSite, headerSite, back } = this.props.slide;
+    var { index = 0 , newSite, headerSite, back, lockSwipe } = this.props.slide;
     index = (+index)+1;
     return React.createElement(Portal, { site: newSite, onClose: this.props.onClose },
-             cloneSlideChild(this, { index, newSite, headerSite, back } ));
+             cloneSlideChild(this, { index, newSite, headerSite, back, lockSwipe } ));
   }
 }
