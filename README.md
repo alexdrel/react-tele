@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/alexdrel/react-tele.svg?branch=master)](https://travis-ci.org/alexdrel/react-tele)
 
+## *Obsolete* by React 16 [Portals](https://reactjs.org/docs/portals.html).
+
 react-tele
 ===
 React (JS) telepresence - rendering outside of own DOM subtree.
